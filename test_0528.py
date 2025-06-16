@@ -23,16 +23,16 @@ with st.form("task_form"):
         else:
             st.error("タスク名を入力してください。")
 
-# スケジュール表示と削除機能
+# スケジュール表示
 st.header("スケジュール一覧")
 if not st.session_state["tasks"].empty:
-    # スケジュール一覧を表示
     for index, row in st.session_state["tasks"].iterrows():
-        col1, col2, col3 = st.columns([3, 3, 1])
-        col1.write(row["日付"])
-        col2.write(row["タスク"])
-        if col3.button("削除", key=f"delete_{index}"):
-            st.session_state["tasks"] = st.session_state["tasks"].drop(index).reset_index(drop=True)
-            st.success(f"タスク '{row['タスク']}' が削除されました！")
+        with st.container():
+            col1, col2, col3 = st.columns([2, 4, 1])
+            col1.write(row["日付"])
+            col2.write(row["タスク"])
+            if col3.button("削除", key=f"delete_{index}"):
+                st.session_state["tasks"] = st.session_state["tasks"].drop(index).reset_index(drop=True)
+                st.success(f"タスク '{row['タスク']}' が削除されました！")
 else:
     st.write("現在、スケジュールはありません。")
