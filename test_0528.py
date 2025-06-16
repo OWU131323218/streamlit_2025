@@ -1,36 +1,36 @@
 import streamlit as st
+import datetime
 
-st.title("第7回 Streamlit フォーム演習 - テンプレート")
-st.caption("st.form を使ってサークル入会申し込みフォームを作成しましょう。")
+st.title("スケジュール管理アプリ")
 
-st.markdown("---")
-st.subheader("演習: サークル入会申し込みフォーム")
-st.write("**課題**: フォームを使って、サークル入会の申し込み情報をまとめて処理するアプリを作成する。")
+# セッションステートで予定リストを管理
+if "schedules" not in st.session_state:
+    st.session_state.schedules = []
 
-# ここに演習のコードを記述してください
-# ヒント: with st.form("フォーム名"): でフォームを作成し、st.form_submit_button() で送信ボタンを設置
-with st.form(key="circle_application_form"):
-    st.subheader("🌸 サークル入会申し込み")
-    
-    # 基本情報の入力欄
-    name = st.text_input("お名前:", value="大妻 花子", key="form_name")
-    
-    grade_options = ["", "1年生", "2年生", "3年生", "4年生"]
-    grade = st.selectbox("学年:", options=grade_options, index=2, key="form_grade")
-    
-    activity_options = ["", "文化祭", "合宿", "勉強会", "交流会", "ボランティア", "その他"]
-    favorite_activity = st.selectbox("好きな活動:", options=activity_options, index=1, key="form_activity")
-    
-    motivation = st.text_area("意気込み:", 
-                             value="新しい友達を作りながら、楽しく活動に参加したいです！", 
-                             key="form_motivation")
-if submitted:
-        st.success("✅ サークル入会申し込みを受け付けました！")
-        st.markdown("**申し込み内容:**")
-        st.write(f"- お名前: {name}")
-        st.write(f"- 学年: {grade}")
-        st.write(f"- 好きな活動: {favorite_activity}")
-        st.write(f"- 意気込み: {motivation}")
-        st.info("後日、サークルの代表者からご連絡いたします。")
-st.markdown("---")
-st.info("💡 全ての項目を入力してから「申し込む」ボタンを押すと、まとめて処理されることを確認してください。") 
+# 予定の追加フォーム
+with st.form("add_schedule"):
+    date = st.date_input("日付", datetime.date.today())
+    time = st.time_input("時間", datetime.time(9, 0))
+    title = st.text_input("タイトル")
+    submitted = st.form_submit_button("追加")
+    if submitted and title:
+        st.session_state.schedules.append({
+            "date": date,
+            "time": time,
+            "title": title
+        })
+        st.success("予定を追加しました！")
+
+# 予定の表示
+st.subheader("予定一覧")
+if st.session_state.schedules:
+    for i, schedule in enumerate(sorted(st.session_state.schedules, key=lambda x: (x["date"], x["time"]))):
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.write(f'{schedule["date"]} {schedule["time"].strftime("%H:%M")} - {schedule["title"]}')
+        with col2:
+            if st.button("削除", key=f"delete_{i}"):
+                st.session_state.schedules.pop(i)
+                st.experimental_rerun()
+else:
+    st.write("予定はありません。")
