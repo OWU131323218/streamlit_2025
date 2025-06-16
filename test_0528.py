@@ -1,36 +1,44 @@
 import streamlit as st
-import datetime
+import pandas as pd
 
+# タイトル
 st.title("スケジュール管理アプリ")
 
-# セッションステートで予定リストを管理
-if "schedules" not in st.session_state:
-    st.session_state.schedules = []
+# タスクデータを保存するためのデータフレーム
+if "tasks" not in st.session_state:
+    st.session_state["tasks"] = pd.DataFrame(columns=["日付", "タスク"])
 
-# 予定の追加フォーム
-with st.form("add_schedule"):
-    date = st.date_input("日付", datetime.date.today())
-    time = st.time_input("時間", datetime.time(9, 0))
-    title = st.text_input("タイトル")
+# タスク追加フォーム
+st.header("タスクを追加")
+with st.form("task_form"):
+    task_date = st.date_input("日付を選択")
+    task_name = st.text_input("タスク名を入力")
     submitted = st.form_submit_button("追加")
-    if submitted and title:
-        st.session_state.schedules.append({
-            "date": date,
-            "time": time,
-            "title": title
-        })
-        st.success("予定を追加しました！")
 
-# 予定の表示
-st.subheader("予定一覧")
-if st.session_state.schedules:
-    for i, schedule in enumerate(sorted(st.session_state.schedules, key=lambda x: (x["date"], x["time"]))):
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            st.write(f'{schedule["date"]} {schedule["time"].strftime("%H:%M")} - {schedule["title"]}')
-        with col2:
-            if st.button("削除", key=f"delete_{i}"):
-                st.session_state.schedules.pop(i)
+    if submitted:
+        if task_name:
+            new_task = pd.DataFrame({"日付": [task_date], "タスク": [task_name]})
+            st.session_state["tasks"] = pd.concat([st.session_state["tasks"], new_task], ignore_index=True)
+            st.success("タスクが追加されました！")
+        else:
+            st.error("タスク名を入力してください。")
+
+# スケジュール表示
+st.header("スケジュール一覧")
+if not st.session_state["tasks"].empty:
+    st.dataframe(st.session_state["tasks"])
+else:
+    st.write("現在、スケジュールはありません。")
+
+# タスク削除機能
+st.header("タスクを削除")
+if not st.session_state["tasks"].empty:
+    task_to_delete = st.selectbox("削除するタスクを選択", st.session_state["tasks"]["タスク"])
+    if st.button("削除"):
+        st.session_state["tasks"] = st.session_state["tasks"][st.session_state["tasks"]["タスク"] != task_to_delete]
+        st.success(f"タスク '{task_to_delete}' が削除されました！")
+else:
+    st.write("削除するタスクがありません。")
                 st.experimental_rerun()
 else:
     st.write("予定はありません。")
