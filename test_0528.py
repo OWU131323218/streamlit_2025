@@ -28,12 +28,17 @@ st.header("📋 スケジュール一覧")
 if not st.session_state["tasks"].empty:
     for index, row in st.session_state["tasks"].iterrows():
         with st.container():
-            col1, col2, col3 = st.columns([3, 3, 1])
-            col1.write(row["日付"])
-            col2.write(row["タスク"])
-            if col3.button("削除", key=f"delete_{index}"):
-                # 指定されたタスクを削除
-                st.session_state["tasks"] = st.session_state["tasks"].drop(index).reset_index(drop=True)
-                st.experimental_rerun()  # 削除後に画面を更新して一覧をリフレッシュ
+            st.markdown(
+                f"""
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
+                    <p><strong>📅 日付:</strong> {row["日付"]}</p>
+                    <p><strong>✏️ タスク:</strong> {row["タスク"]}</p>
+                    <form action="" method="post">
+                        <button style="background-color: #ff4b4b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="window.location.reload()">削除</button>
+                    </form>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 else:
     st.write("現在、スケジュールはありません。")
