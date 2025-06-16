@@ -23,7 +23,7 @@ with st.form("task_form"):
         else:
             st.error("⚠️ タスク名を入力してください。")
 
-# スケジュール表示
+# スケジュール表示と削除機能
 st.header("📋 スケジュール一覧")
 if not st.session_state["tasks"].empty:
     for index, row in st.session_state["tasks"].iterrows():
@@ -33,7 +33,9 @@ if not st.session_state["tasks"].empty:
                 <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
                     <p><strong>📅 日付:</strong> {row["日付"]}</p>
                     <p><strong>✏️ タスク:</strong> {row["タスク"]}</p>
-                    <button style="background-color: #ff4b4b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="window.location.reload()">削除</button>
+                    <form action="" method="post">
+                        <button style="background-color: #ff4b4b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="window.location.reload()">削除</button>
+                    </form>
                 </div>
                 """,
                 unsafe_allow_html=True,
