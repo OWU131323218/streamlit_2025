@@ -29,13 +29,16 @@ if st.session_state.schedules:
         enumerate(st.session_state.schedules),
         key=lambda x: (x[1]["date"], x[1]["time"])
     )
+    delete_index = None
     for idx, schedule in schedules:
         col1, col2 = st.columns([5, 1])
         with col1:
             st.write(f'{schedule["date"]} {schedule["time"].strftime("%H:%M")} - {schedule["title"]}')
         with col2:
             if st.button("削除", key=f"delete_{idx}"):
-                st.session_state.schedules.pop(idx)
-                st.experimental_rerun()
+                delete_index = idx
+    if delete_index is not None:
+        st.session_state.schedules.pop(delete_index)
+        st.experimental_rerun()
 else:
     st.write("予定はありません。")
