@@ -91,4 +91,5 @@ if st.session_state.todo_list:
     with col2:
         if st.button("完了済みタスクを削除"):
             st.session_state.todo_list = [item for item in st.session_state.todo_list if not item["done"]]
-            st.success("完了済みタスクを削
+            st.success("完了済みタスクを削除しました")
+            st.rerun()
