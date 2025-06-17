@@ -1,21 +1,17 @@
 import streamlit as st
 from datetime import datetime
 
-st.title("第8回 演習: ToDoリストアプリ - 解答例")
-st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
+st.title("スケジュール管理アプリ")
 
-st.markdown("---")
-st.subheader("演習: ToDoリスト")
-st.write("**課題**: タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成する。")
 
 # ToDoリストの初期化
 if "todo_list" not in st.session_state:
     st.session_state.todo_list = []
 
-# タスク追加機能
-st.subheader("新しいタスクを追加")
-new_task = st.text_input("タスクを入力してください", placeholder="例: レポートを書く")
-new_task_memo = st.text_area("タスクのメモ（任意）", placeholder="例: 提出先や注意事項など")
+# 予定追加機能
+st.subheader("新しい予定を追加")
+new_task = st.text_input("予定を入力してください", placeholder="例: ショッピング")
+new_task_memo = st.text_area("予定のメモ（任意）", placeholder="例: 持ち物や集合場所など")
 
 col_date, col_time = st.columns(2)
 with col_date:
@@ -23,9 +19,9 @@ with col_date:
 with col_time:
     task_time_str = st.text_input("時間を入力（例: 14:30）", value=datetime.now().strftime("%H:%M"))
 
-if st.button("タスクを追加"):
+if st.button("予定を追加"):
     if not new_task:
-        st.error("タスクを入力してください")
+        st.error("予定を入力してください")
     else:
         try:
             datetime.strptime(task_time_str, "%H:%M")
@@ -41,15 +37,15 @@ if st.button("タスクを追加"):
         except ValueError:
             st.error("時間は「HH:MM」形式で入力してください")
 
-# ToDoリスト表示
-st.subheader("📝 ToDoリスト")
+# 予定リスト表示
+st.subheader("📝 予定一覧")
 
 if not st.session_state.todo_list:
-    st.info("まだタスクがありません。新しいタスクを追加してみましょう！")
+    st.info("まだ予定がありません。新しい予定を追加してみましょう！")
 else:
     total_tasks = len(st.session_state.todo_list)
     completed_tasks = sum(1 for item in st.session_state.todo_list if item["done"])
-    st.write(f"**タスク数**: {total_tasks} 件 | **完了**: {completed_tasks} 件 | **残り**: {total_tasks - completed_tasks} 件")
+    st.write(f"**予定数**: {total_tasks} 件 | **完了**: {completed_tasks} 件 | **残り**: {total_tasks - completed_tasks} 件")
     for i, item in enumerate(st.session_state.todo_list):
         col1, col2, col3 = st.columns([4, 2, 1])
         with col1:
@@ -69,7 +65,7 @@ else:
         with col3:
             if st.button("🗑️ 削除", key=f"delete_{i}"):
                 st.session_state.todo_list.pop(i)
-                st.success("タスクを削除しました")
+                st.success("予定を削除しました")
                 st.rerun()
 
 # 一括操作
@@ -80,10 +76,10 @@ if st.session_state.todo_list:
         if st.button("全て完了にする"):
             for item in st.session_state.todo_list:
                 item["done"] = True
-            st.success("全てのタスクを完了にしました！")
+            st.success("全ての予定を完了にしました！")
             st.rerun()
     with col2:
-        if st.button("完了済みタスクを削除"):
+        if st.button("完了済み予定を削除"):
             st.session_state.todo_list = [item for item in st.session_state.todo_list if not item["done"]]
-            st.success("完了済みタスクを削除しました")
+            st.success("完了済み予定を削除しました")
             st.rerun()
