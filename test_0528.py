@@ -1,8 +1,7 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, time
 
 st.title("スケジュール管理アプリ")
-
 
 # ToDoリストの初期化
 if "todo_list" not in st.session_state:
@@ -17,25 +16,22 @@ col_date, col_time = st.columns(2)
 with col_date:
     task_date = st.date_input("日付を選択", value=datetime.now().date())
 with col_time:
-    task_time_str = st.text_input("時間を入力（例: 14:30）", value=datetime.now().strftime("%H:%M"))
+    # 時間をスクロールで選択できるように
+    task_time = st.time_input("時間を選択", value=datetime.now().time().replace(second=0, microsecond=0))
 
 if st.button("予定を追加"):
     if not new_task:
         st.error("予定を入力してください")
     else:
-        try:
-            datetime.strptime(task_time_str, "%H:%M")
-            st.session_state.todo_list.append({
-                "task": new_task,
-                "memo": new_task_memo,
-                "done": False,
-                "date": task_date.strftime("%Y-%m-%d"),
-                "time": task_time_str
-            })
-            st.success(f"「{new_task}」を追加しました！")
-            st.rerun()
-        except ValueError:
-            st.error("時間は「HH:MM」形式で入力してください")
+        st.session_state.todo_list.append({
+            "task": new_task,
+            "memo": new_task_memo,
+            "done": False,
+            "date": task_date.strftime("%Y-%m-%d"),
+            "time": task_time.strftime("%H:%M")
+        })
+        st.success(f"「{new_task}」を追加しました！")
+        st.rerun()
 
 # 予定リスト表示
 st.subheader("📝 予定一覧")
