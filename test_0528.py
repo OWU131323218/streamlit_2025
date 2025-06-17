@@ -1,44 +1,46 @@
 import streamlit as st
-import datetime
+import random
+import time
 
-st.title("📅 スケジュール管理アプリ")
+st.title("⌨️ タイピングゲーム")
 
-# セッションステートで予定リストを管理
-if "schedules" not in st.session_state:
-    st.session_state.schedules = []
+# お題リスト
+words = [
+    "algorithm", "python", "streamlit", "computer", "keyboard",
+    "university", "schedule", "visualization", "function", "variable"
+]
 
-# 予定の追加フォーム
-with st.form("add_schedule"):
-    date = st.date_input("日付", datetime.date.today())
-    time = st.time_input("時間", datetime.time(9, 0))
-    title = st.text_input("タイトル")
-    submitted = st.form_submit_button("追加")
-    if submitted and title:
-        st.session_state.schedules.append({
-            "date": date,
-            "time": time,
-            "title": title
-        })
-        st.success("予定を追加しました！")
+if "current_word" not in st.session_state:
+    st.session_state.current_word = random.choice(words)
+    st.session_state.start_time = None
+    st.session_state.input_text = ""
+    st.session_state.result = ""
+    st.session_state.finished = False
 
-# 予定の表示と削除
-st.subheader("予定一覧")
-if st.session_state.schedules:
-    # 日付・時間順にソート
-    schedules = sorted(
-        enumerate(st.session_state.schedules),
-        key=lambda x: (x[1]["date"], x[1]["time"])
-    )
-    delete_index = None
-    for idx, schedule in schedules:
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            st.write(f'{schedule["date"]} {schedule["time"].strftime("%H:%M")} - {schedule["title"]}')
-        with col2:
-            if st.button("削除", key=f"delete_{idx}"):
-                delete_index = idx
-    if delete_index is not None:
-        st.session_state.schedules.pop(delete_index)
-        st.experimental_rerun()
+def reset_game():
+    st.session_state.current_word = random.choice(words)
+    st.session_state.start_time = None
+    st.session_state.input_text = ""
+    st.session_state.result = ""
+    st.session_state.finished = False
+
+if st.button("リセット"):
+    reset_game()
+
+st.subheader("次の英単語を入力してください：")
+st.markdown(f"## {st.session_state.current_word}")
+
+if not st.session_state.start_time:
+    if st.button("スタート"):
+        st.session_state.start_time = time.time()
 else:
-    st.write("予定はありません。")
+    st.session_state.input_text = st.text_input("ここに入力", value=st.session_state.input_text)
+    if st.session_state.input_text == st.session_state.current_word and not st.session_state.finished:
+        elapsed = time.time() - st.session_state.start_time
+        st.session_state.result = f"クリア！タイム：{elapsed:.2f}秒"
+        st.session_state.finished = True
+
+if st.session_state.result:
+    st.success(st.session_state.result)
+    if st.button("もう一度挑戦"):
+        reset_game()
