@@ -34,12 +34,27 @@ if st.button("タスクを追加"):
                 "task": new_task,
                 "done": False,
                 "date": task_date.strftime("%Y-%m-%d"),
-                "time": task_time_str
+                "time": task_time_str,
+                "alerted": False  # アラート済みかどうか
             })
             st.success(f"「{new_task}」を追加しました！")
             st.rerun()
         except ValueError:
             st.error("時間は「HH:MM」形式で入力してください")
+
+# アラート機能
+now = datetime.now()
+for i, item in enumerate(st.session_state.todo_list):
+    if not item.get("done", False) and not item.get("alerted", False):
+        task_datetime_str = f"{item['date']} {item['time']}"
+        try:
+            task_datetime = datetime.strptime(task_datetime_str, "%Y-%m-%d %H:%M")
+            # 現在時刻と一致したらアラート
+            if now.strftime("%Y-%m-%d %H:%M") == task_datetime.strftime("%Y-%m-%d %H:%M"):
+                st.warning(f"【アラート】「{item['task']}」の時間になりました！")
+                st.session_state.todo_list[i]["alerted"] = True
+        except Exception:
+            pass
 
 # ToDoリスト表示
 st.subheader("📝 ToDoリスト")
