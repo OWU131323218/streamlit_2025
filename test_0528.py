@@ -1,14 +1,24 @@
 import streamlit as st
-from datetime import datetime, time
+from datetime import datetime
 
+# 背景色を水色に設定し、アニメーションを追加
 st.markdown(
     """
     <style>
-    body {
-        background-color: #e0f7fa;
-    }
     [data-testid="stAppViewContainer"] {
-        background-color: #e0f7fa;
+        background: linear-gradient(120deg, #e0f7fa 0%, #b2ebf2 100%);
+        animation: bgmove 10s ease-in-out infinite alternate;
+    }
+    @keyframes bgmove {
+        0% {background-position: 0% 50%;}
+        100% {background-position: 100% 50%;}
+    }
+    .memo-anim {
+        animation: fadein 1.5s;
+    }
+    @keyframes fadein {
+        from { opacity: 0; transform: translateY(20px);}
+        to { opacity: 1; transform: translateY(0);}
     }
     </style>
     """,
@@ -30,22 +40,25 @@ col_date, col_time = st.columns(2)
 with col_date:
     task_date = st.date_input("日付を選択", value=datetime.now().date())
 with col_time:
-    # 時間をスクロールで選択できるように
-    task_time = st.time_input("時間を選択", value=datetime.now().time().replace(second=0, microsecond=0))
+    task_time_str = st.text_input("時間を入力（例: 14:30）", value=datetime.now().strftime("%H:%M"))
 
 if st.button("予定を追加"):
     if not new_task:
         st.error("予定を入力してください")
     else:
-        st.session_state.todo_list.append({
-            "task": new_task,
-            "memo": new_task_memo,
-            "done": False,
-            "date": task_date.strftime("%Y-%m-%d"),
-            "time": task_time.strftime("%H:%M")
-        })
-        st.success(f"「{new_task}」を追加しました！")
-        st.rerun()
+        try:
+            datetime.strptime(task_time_str, "%H:%M")
+            st.session_state.todo_list.append({
+                "task": new_task,
+                "memo": new_task_memo,
+                "done": False,
+                "date": task_date.strftime("%Y-%m-%d"),
+                "time": task_time_str
+            })
+            st.success(f"「{new_task}」を追加しました！")
+            st.rerun()
+        except ValueError:
+            st.error("時間は「HH:MM」形式で入力してください")
 
 # 予定リスト表示
 st.subheader("📝 予定一覧")
@@ -67,9 +80,12 @@ else:
             if is_done != item["done"]:
                 st.session_state.todo_list[i]["done"] = is_done
                 st.rerun()
-            # メモがあれば表示
+            # メモがあればアニメーション付きで表示
             if item.get("memo"):
-                st.markdown(f"<span style='color: #888;'>📝 {item['memo']}</span>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<span class='memo-anim' style='color: #888;'>📝 {item['memo']}</span>",
+                    unsafe_allow_html=True
+                )
         with col2:
             st.write(f"📅 {item.get('date', '')} ⏰ {item.get('time', '')}")
         with col3:
