@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 
 st.title("第8回 演習: ToDoリストアプリ - 解答例")
 st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
@@ -15,9 +16,22 @@ if "todo_list" not in st.session_state:
 st.subheader("新しいタスクを追加")
 new_task = st.text_input("タスクを入力してください", placeholder="例: レポートを書く")
 
+# 日付と時間の入力欄を追加
+col_date, col_time = st.columns(2)
+with col_date:
+    task_date = st.date_input("日付を選択", value=datetime.now().date())
+with col_time:
+    task_time = st.time_input("時間を選択", value=datetime.now().time().replace(second=0, microsecond=0))
+
 if st.button("タスクを追加"):
     if new_task:
-        st.session_state.todo_list.append({"task": new_task, "done": False})
+        # 日付と時間を文字列で保存
+        st.session_state.todo_list.append({
+            "task": new_task,
+            "done": False,
+            "date": task_date.strftime("%Y-%m-%d"),
+            "time": task_time.strftime("%H:%M")
+        })
         st.success(f"「{new_task}」を追加しました！")
         st.rerun()
     else:
@@ -37,7 +51,7 @@ else:
     
     # 各タスクの表示
     for i, item in enumerate(st.session_state.todo_list):
-        col1, col2 = st.columns([4, 1])
+        col1, col2, col3 = st.columns([4, 2, 1])
         
         with col1:
             # チェックボックスで完了状態を管理
@@ -46,13 +60,16 @@ else:
                 value=item["done"], 
                 key=f"checkbox_{i}"
             )
-            
             # 完了状態が変更された場合
             if is_done != item["done"]:
                 st.session_state.todo_list[i]["done"] = is_done
                 st.rerun()
         
         with col2:
+            # 日付と時間の表示
+            st.write(f"📅 {item.get('date', '')} ⏰ {item.get('time', '')}")
+        
+        with col3:
             # 削除ボタン
             if st.button("🗑️ 削除", key=f"delete_{i}"):
                 st.session_state.todo_list.pop(i)
@@ -74,5 +91,4 @@ if st.session_state.todo_list:
     with col2:
         if st.button("完了済みタスクを削除"):
             st.session_state.todo_list = [item for item in st.session_state.todo_list if not item["done"]]
-            st.success("完了済みタスクを削除しました")
-            st.rerun()
+            st.success("完了済みタスクを削
