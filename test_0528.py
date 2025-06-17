@@ -1,12 +1,7 @@
 import streamlit as st
 from datetime import datetime
 
-st.title("第8回 演習: ToDoリストアプリ - 解答例")
-st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
-
-st.markdown("---")
-st.subheader("演習: ToDoリスト")
-st.write("**課題**: タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成する。")
+st.title("スケジュール管理アプリ")
 
 # ToDoリストの初期化
 if "todo_list" not in st.session_state:
