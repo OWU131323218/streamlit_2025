@@ -21,21 +21,25 @@ col_date, col_time = st.columns(2)
 with col_date:
     task_date = st.date_input("日付を選択", value=datetime.now().date())
 with col_time:
-    task_time = st.time_input("時間を選択", value=datetime.now().time().replace(second=0, microsecond=0))
+    task_time_str = st.text_input("時間を入力（例: 14:30）", value=datetime.now().strftime("%H:%M"))
 
 if st.button("タスクを追加"):
-    if new_task:
-        # 日付と時間を文字列で保存
-        st.session_state.todo_list.append({
-            "task": new_task,
-            "done": False,
-            "date": task_date.strftime("%Y-%m-%d"),
-            "time": task_time.strftime("%H:%M")
-        })
-        st.success(f"「{new_task}」を追加しました！")
-        st.rerun()
-    else:
+    if not new_task:
         st.error("タスクを入力してください")
+    else:
+        # 時間の形式チェック
+        try:
+            datetime.strptime(task_time_str, "%H:%M")
+            st.session_state.todo_list.append({
+                "task": new_task,
+                "done": False,
+                "date": task_date.strftime("%Y-%m-%d"),
+                "time": task_time_str
+            })
+            st.success(f"「{new_task}」を追加しました！")
+            st.rerun()
+        except ValueError:
+            st.error("時間は「HH:MM」形式で入力してください")
 
 # ToDoリスト表示
 st.subheader("📝 ToDoリスト")
@@ -91,5 +95,5 @@ if st.session_state.todo_list:
     with col2:
         if st.button("完了済みタスクを削除"):
             st.session_state.todo_list = [item for item in st.session_state.todo_list if not item["done"]]
-            st.success("完了済みタスクを削除しました")
+            st.success("完了済済みタスクを削除しました")
             st.rerun()
