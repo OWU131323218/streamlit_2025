@@ -1,20 +1,15 @@
 import streamlit as st
 from datetime import datetime
 
-st.title("第8回 演習: ToDoリストアプリ - 解答例")
-st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
-
-st.markdown("---")
-st.subheader("演習: ToDoリスト")
-st.write("**課題**: タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成する。")
+st.title("スケジュール管理アプリ")
 
 # ToDoリストの初期化
 if "todo_list" not in st.session_state:
     st.session_state.todo_list = []
 
 # タスク追加機能
-st.subheader("新しいタスクを追加")
-new_task = st.text_input("タスクを入力してください", placeholder="例: レポートを書く")
+st.subheader("新しい予定を追加")
+new_task = st.text_input("予定を入力してください", placeholder="例: アルバイト")
 
 # 日付と時間の入力欄を追加
 col_date, col_time = st.columns(2)
@@ -23,9 +18,9 @@ with col_date:
 with col_time:
     task_time_str = st.text_input("時間を入力（例: 14:30）", value=datetime.now().strftime("%H:%M"))
 
-if st.button("タスクを追加"):
+if st.button("予定を追加"):
     if not new_task:
-        st.error("タスクを入力してください")
+        st.error("予定を入力してください")
     else:
         # 時間の形式チェック
         try:
@@ -35,23 +30,23 @@ if st.button("タスクを追加"):
                 "done": False,
                 "date": task_date.strftime("%Y-%m-%d"),
                 "time": task_time_str,
-                "alerted": False  # アラート済みかどうか
+                "alerted": False  # アラーム済みかどうか
             })
             st.success(f"「{new_task}」を追加しました！")
             st.rerun()
         except ValueError:
             st.error("時間は「HH:MM」形式で入力してください")
 
-# アラート機能
+# アラーム機能
 now = datetime.now()
 for i, item in enumerate(st.session_state.todo_list):
     if not item.get("done", False) and not item.get("alerted", False):
         task_datetime_str = f"{item['date']} {item['time']}"
         try:
             task_datetime = datetime.strptime(task_datetime_str, "%Y-%m-%d %H:%M")
-            # 現在時刻と一致したらアラート
+            # 現在時刻と一致したらアラーム
             if now.strftime("%Y-%m-%d %H:%M") == task_datetime.strftime("%Y-%m-%d %H:%M"):
-                st.warning(f"【アラート】「{item['task']}」の時間になりました！")
+                st.error(f"⏰ アラーム: 「{item['task']}」の時間になりました！")
                 st.session_state.todo_list[i]["alerted"] = True
         except Exception:
             pass
@@ -60,7 +55,7 @@ for i, item in enumerate(st.session_state.todo_list):
 st.subheader("📝 ToDoリスト")
 
 if not st.session_state.todo_list:
-    st.info("まだタスクがありません。新しいタスクを追加してみましょう！")
+    st.info("まだ予定がありません。新しい予定を追加してみましょう！")
 else:
     # 完了・未完了の統計
     total_tasks = len(st.session_state.todo_list)
@@ -92,7 +87,7 @@ else:
             # 削除ボタン
             if st.button("🗑️ 削除", key=f"delete_{i}"):
                 st.session_state.todo_list.pop(i)
-                st.success("タスクを削除しました")
+                st.success("予定を削除しました")
                 st.rerun()
 
 # 一括操作
@@ -104,11 +99,11 @@ if st.session_state.todo_list:
         if st.button("全て完了にする"):
             for item in st.session_state.todo_list:
                 item["done"] = True
-            st.success("全てのタスクを完了にしました！")
+            st.success("全ての予定を完了にしました！")
             st.rerun()
     
     with col2:
-        if st.button("完了済みタスクを削除"):
+        if st.button("完了済み予定を削除"):
             st.session_state.todo_list = [item for item in st.session_state.todo_list if not item["done"]]
-            st.success("完了済みタスクを削除しました")
+            st.success("完了済み予定を削除しました")
             st.rerun()
