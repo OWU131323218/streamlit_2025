@@ -1,39 +1,41 @@
 import streamlit as st
-import pandas as pd
+import datetime
 
-# タイトル
-st.title("🗓️ スケジュール管理アプリ")
+st.title("📅 スケジュール管理アプリ")
 
-# タスクデータを保存するためのデータフレーム
-if "tasks" not in st.session_state:
-    st.session_state["tasks"] = pd.DataFrame(columns=["日付", "タスク"])
+# セッションステートで予定リストを管理
+if "schedules" not in st.session_state:
+    st.session_state.schedules = []
 
-# タスク追加フォーム
-st.header("➕ タスクを追加")
-with st.form("task_form"):
-    task_date = st.date_input("📅 日付を選択")
-    task_name = st.text_input("✏️ タスク名を入力")
+# 予定の追加フォーム
+with st.form("add_schedule"):
+    date = st.date_input("日付", datetime.date.today())
+    time = st.time_input("時間", datetime.time(9, 0))
+    title = st.text_input("タイトル")
     submitted = st.form_submit_button("追加")
+    if submitted and title:
+        st.session_state.schedules.append({
+            "date": date,
+            "time": time,
+            "title": title
+        })
+        st.success("予定を追加しました！")
 
-    if submitted:
-        if task_name:
-            new_task = pd.DataFrame({"日付": [task_date], "タスク": [task_name]})
-            st.session_state["tasks"] = pd.concat([st.session_state["tasks"], new_task], ignore_index=True)
-            st.success("✅ タスクが追加されました！")
-        else:
-            st.error("⚠️ タスク名を入力してください。")
-
-# スケジュール表示と削除機能
-st.header("📋 スケジュール一覧")
-if not st.session_state["tasks"].empty:
-    for index, row in st.session_state["tasks"].iterrows():
-        with st.container():
-            col1, col2, col3 = st.columns([3, 3, 1])
-            col1.write(row["日付"])
-            col2.write(row["タスク"])
-            if col3.button("削除", key=f"delete_{index}"):
-                # 指定されたタスクを削除
-                st.session_state["tasks"] = st.session_state["tasks"].drop(index).reset_index(drop=True)
-                st.experimental_rerun()  # 削除後に画面を更新して一覧をリフレッシュ
+# 予定の表示と削除
+st.subheader("予定一覧")
+if st.session_state.schedules:
+    # 日付・時間順にソート
+    schedules = sorted(
+        enumerate(st.session_state.schedules),
+        key=lambda x: (x[1]["date"], x[1]["time"])
+    )
+    for idx, schedule in schedules:
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.write(f'{schedule["date"]} {schedule["time"].strftime("%H:%M")} - {schedule["title"]}')
+        with col2:
+            if st.button("削除", key=f"delete_{idx}"):
+                st.session_state.schedules.pop(idx)
+                st.experimental_rerun()
 else:
-    st.write("現在、スケジュールはありません。")
+    st.write("予定はありません。")
