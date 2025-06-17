@@ -41,4 +41,5 @@ if submitted:
         result = "【サポータータイプ】\n人の気持ちに寄り添い、支えるのが得意です。"
     else:
         result = "【マイペースタイプ】\n自分のペースを大切にする落ち着いた性格です。"
-    st.header("診断結果
+    st.header("診断結果")
+    st.success(result)
