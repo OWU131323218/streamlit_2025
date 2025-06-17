@@ -1,24 +1,15 @@
 import streamlit as st
 from datetime import datetime
 
-# 背景色を水色に設定し、アニメーションを追加
+# 背景色を水色に設定
 st.markdown(
     """
     <style>
+    body {
+        background-color: #e0f7fa;
+    }
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(120deg, #e0f7fa 0%, #b2ebf2 100%);
-        animation: bgmove 10s ease-in-out infinite alternate;
-    }
-    @keyframes bgmove {
-        0% {background-position: 0% 50%;}
-        100% {background-position: 100% 50%;}
-    }
-    .memo-anim {
-        animation: fadein 1.5s;
-    }
-    @keyframes fadein {
-        from { opacity: 0; transform: translateY(20px);}
-        to { opacity: 1; transform: translateY(0);}
+        background-color: #e0f7fa;
     }
     </style>
     """,
@@ -80,12 +71,9 @@ else:
             if is_done != item["done"]:
                 st.session_state.todo_list[i]["done"] = is_done
                 st.rerun()
-            # メモがあればアニメーション付きで表示
+            # メモがあれば表示
             if item.get("memo"):
-                st.markdown(
-                    f"<span class='memo-anim' style='color: #888;'>📝 {item['memo']}</span>",
-                    unsafe_allow_html=True
-                )
+                st.markdown(f"<span style='color: #888;'>📝 {item['memo']}</span>", unsafe_allow_html=True)
         with col2:
             st.write(f"📅 {item.get('date', '')} ⏰ {item.get('time', '')}")
         with col3:
