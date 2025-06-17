@@ -1,6 +1,20 @@
 import streamlit as st
 from datetime import datetime, time
 
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #e0f7fa;
+    }
+    [data-testid="stAppViewContainer"] {
+        background-color: #e0f7fa;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("スケジュール管理アプリ")
 
 # ToDoリストの初期化
