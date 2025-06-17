@@ -12,13 +12,10 @@ st.write("**課題**: タスクの追加・完了チェック・削除ができ�
 if "todo_list" not in st.session_state:
     st.session_state.todo_list = []
 
-# メモ機能の初期化
-if "memo_list" not in st.session_state:
-    st.session_state.memo_list = []
-
 # タスク追加機能
 st.subheader("新しいタスクを追加")
 new_task = st.text_input("タスクを入力してください", placeholder="例: レポートを書く")
+new_task_memo = st.text_area("タスクのメモ（任意）", placeholder="例: 提出先や注意事項など")
 
 col_date, col_time = st.columns(2)
 with col_date:
@@ -34,6 +31,7 @@ if st.button("タスクを追加"):
             datetime.strptime(task_time_str, "%H:%M")
             st.session_state.todo_list.append({
                 "task": new_task,
+                "memo": new_task_memo,
                 "done": False,
                 "date": task_date.strftime("%Y-%m-%d"),
                 "time": task_time_str
@@ -43,32 +41,7 @@ if st.button("タスクを追加"):
         except ValueError:
             st.error("時間は「HH:MM」形式で入力してください")
 
-# --- メモ機能 ---
-st.markdown("---")
-st.subheader("📝 メモ機能")
-new_memo = st.text_area("メモを入力してください", placeholder="例: 明日の予定を確認する")
-if st.button("メモを追加"):
-    if new_memo.strip():
-        st.session_state.memo_list.append(new_memo.strip())
-        st.success("メモを追加しました！")
-        st.rerun()
-    else:
-        st.error("メモを入力してください")
-
-if st.session_state.memo_list:
-    st.markdown("#### 登録済みメモ")
-    for i, memo in enumerate(st.session_state.memo_list):
-        col1, col2 = st.columns([8, 1])
-        with col1:
-            st.write(memo)
-        with col2:
-            if st.button("🗑️", key=f"delete_memo_{i}"):
-                st.session_state.memo_list.pop(i)
-                st.success("メモを削除しました")
-                st.rerun()
-
 # ToDoリスト表示
-st.markdown("---")
 st.subheader("📝 ToDoリスト")
 
 if not st.session_state.todo_list:
@@ -88,6 +61,9 @@ else:
             if is_done != item["done"]:
                 st.session_state.todo_list[i]["done"] = is_done
                 st.rerun()
+            # メモがあれば表示
+            if item.get("memo"):
+                st.markdown(f"<span style='color: #888;'>📝 {item['memo']}</span>", unsafe_allow_html=True)
         with col2:
             st.write(f"📅 {item.get('date', '')} ⏰ {item.get('time', '')}")
         with col3:
