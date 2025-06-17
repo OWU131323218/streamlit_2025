@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime
 
-# 背景色を水色に設定
 st.markdown(
     """
     <style>
