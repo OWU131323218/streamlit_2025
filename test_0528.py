@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 st.title("第8回 演習: ToDoリストアプリ - 解答例")
 st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
@@ -40,42 +41,79 @@ if st.button("タスクを追加"):
             st.error("時間は「HH:MM」形式で入力してください")
 
 # カレンダー風ToDoリスト表示
-st.subheader("📅 カレンダー風 ToDoリスト")
+st.subheader("📅 カレンダー表示 ToDoリスト")
 
 if not st.session_state.todo_list:
     st.info("まだタスクがありません。新しいタスクを追加してみましょう！")
 else:
-    # 日付ごとにタスクをまとめる
-    from collections import defaultdict
+    # タスクを日付ごとにまとめる
     tasks_by_date = defaultdict(list)
     for i, item in enumerate(st.session_state.todo_list):
         tasks_by_date[item["date"]].append((i, item))
 
-    # 日付順に表示
-    for date in sorted(tasks_by_date.keys()):
-        st.markdown(f"### <span style='color:#2c3e50'>📆 {date}</span>", unsafe_allow_html=True)
-        for i, item in tasks_by_date[date]:
-            cols = st.columns([1, 2, 4, 1])
-            with cols[0]:
-                is_done = st.checkbox(
-                    "", 
-                    value=item["done"], 
-                    key=f"checkbox_{i}"
-                )
-                if is_done != item["done"]:
-                    st.session_state.todo_list[i]["done"] = is_done
-                    st.rerun()
-            with cols[1]:
-                st.markdown(f"<span style='color:#2980b9;font-weight:bold'>{item['time']}</span>", unsafe_allow_html=True)
-            with cols[2]:
-                task_style = "text-decoration: line-through; color: #888;" if item["done"] else ""
-                st.markdown(f"<span style='{task_style}'>{item['task']}</span>", unsafe_allow_html=True)
-            with cols[3]:
-                if st.button("🗑️", key=f"delete_{i}"):
-                    st.session_state.todo_list.pop(i)
-                    st.success("タスクを削除しました")
-                    st.rerun()
-        st.markdown("---")
+    # 今月のカレンダーを作成
+    today = datetime.now().date()
+    first_day = today.replace(day=1)
+    last_day = (first_day + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    start_weekday = first_day.weekday()  # 月曜=0
+    days_in_month = last_day.day
+
+    # カレンダーのヘッダー
+    st.markdown(
+        "<style>th,td{padding:4px 8px;text-align:center;} .done{color:#aaa;text-decoration:line-through;}</style>",
+        unsafe_allow_html=True
+    )
+    st.markdown(f"#### {today.strftime('%Y年%m月')}")
+    calendar_html = "<table><tr>"
+    for wd in ["月", "火", "水", "木", "金", "土", "日"]:
+        calendar_html += f"<th>{wd}</th>"
+    calendar_html += "</tr><tr>"
+
+    # 空白セル
+    for _ in range(start_weekday):
+        calendar_html += "<td></td>"
+
+    # 日付セル
+    for day in range(1, days_in_month + 1):
+        date_str = first_day.replace(day=day).strftime("%Y-%m-%d")
+        cell_content = f"<b>{day}</b>"
+        # タスクがあれば表示
+        if date_str in tasks_by_date:
+            for idx, item in tasks_by_date[date_str]:
+                style = "done" if item["done"] else ""
+                cell_content += f"<br><span class='{style}'>[{item['time']}] {item['task']}</span>"
+        calendar_html += f"<td>{cell_content}</td>"
+        # 日曜で改行
+        if (start_weekday + day) % 7 == 0:
+            calendar_html += "</tr><tr>"
+    # 残りの空白セル
+    remain = (start_weekday + days_in_month) % 7
+    if remain != 0:
+        for _ in range(7 - remain):
+            calendar_html += "<td></td>"
+    calendar_html += "</tr></table>"
+
+    st.markdown(calendar_html, unsafe_allow_html=True)
+
+    # タスクの完了・削除操作
+    st.markdown("---")
+    st.write("### タスク操作")
+    for i, item in enumerate(st.session_state.todo_list):
+        cols = st.columns([4, 2, 2, 1])
+        with cols[0]:
+            is_done = st.checkbox(
+                f"{item['task']} ({item['date']} {item['time']})",
+                value=item["done"],
+                key=f"checkbox_{i}"
+            )
+            if is_done != item["done"]:
+                st.session_state.todo_list[i]["done"] = is_done
+                st.rerun()
+        with cols[3]:
+            if st.button("🗑️", key=f"delete_{i}"):
+                st.session_state.todo_list.pop(i)
+                st.success("タスクを削除しました")
+                st.rerun()
 
 # 一括操作
 if st.session_state.todo_list:
