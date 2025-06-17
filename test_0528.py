@@ -1,56 +1,78 @@
 import streamlit as st
 
-st.title("📝 クイズゲーム")
+st.title("第8回 演習: ToDoリストアプリ - 解答例")
+st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
 
-questions = [
-    {
-        "q": "日本の首都はどこ？",
-        "a": ["大阪", "東京", "名古屋", "札幌"],
-        "correct": 1
-    },
-    {
-        "q": "地球は何番目の惑星？（太陽から数えて）",
-        "a": ["2番目", "3番目", "4番目", "5番目"],
-        "correct": 1
-    },
-    {
-        "q": "パイ（π）の値に最も近いのは？",
-        "a": ["2.14", "3.14", "4.13", "1.34"],
-        "correct": 1
-    },
-    {
-        "q": "イギリスの公用語は？",
-        "a": ["英語", "フランス語", "ドイツ語", "スペイン語"],
-        "correct": 0
-    },
-    {
-        "q": "富士山の標高は約？",
-        "a": ["2,776m", "3,776m", "4,776m", "1,776m"],
-        "correct": 1
-    }
-]
+st.markdown("---")
+st.subheader("演習: ToDoリスト")
+st.write("**課題**: タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成する。")
 
-if "answers" not in st.session_state:
-    st.session_state.answers = [None] * len(questions)
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
+# ToDoリストの初期化
+if "todo_list" not in st.session_state:
+    st.session_state.todo_list = []
 
-with st.form("quiz_form"):
-    for i, q in enumerate(questions):
-        st.session_state.answers[i] = st.radio(q["q"], q["a"], index=st.session_state.answers[i] if st.session_state.answers[i] is not None else 0, key=f"q{i}")
-    submitted = st.form_submit_button("採点する")
-    if submitted:
-        st.session_state.submitted = True
+# タスク追加機能
+st.subheader("新しいタスクを追加")
+new_task = st.text_input("タスクを入力してください", placeholder="例: レポートを書く")
 
-if st.session_state.submitted:
-    score = 0
-    for i, q in enumerate(questions):
-        if q["a"].index(st.session_state.answers[i]) == q["correct"]:
-            score += 1
-    st.header(f"あなたのスコア: {score} / {len(questions)}")
-    if score == len(questions):
-        st.success("全問正解！すごい！")
-    elif score >= len(questions) // 2:
-        st.info("なかなか良い成績です！")
+if st.button("タスクを追加"):
+    if new_task:
+        st.session_state.todo_list.append({"task": new_task, "done": False})
+        st.success(f"「{new_task}」を追加しました！")
+        st.rerun()
     else:
-        st.warning("もう一度チャレンジしてみよう！")
+        st.error("タスクを入力してください")
+
+# ToDoリスト表示
+st.subheader("📝 ToDoリスト")
+
+if not st.session_state.todo_list:
+    st.info("まだタスクがありません。新しいタスクを追加してみましょう！")
+else:
+    # 完了・未完了の統計
+    total_tasks = len(st.session_state.todo_list)
+    completed_tasks = sum(1 for item in st.session_state.todo_list if item["done"])
+    
+    st.write(f"**タスク数**: {total_tasks} 件 | **完了**: {completed_tasks} 件 | **残り**: {total_tasks - completed_tasks} 件")
+    
+    # 各タスクの表示
+    for i, item in enumerate(st.session_state.todo_list):
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            # チェックボックスで完了状態を管理
+            is_done = st.checkbox(
+                item["task"], 
+                value=item["done"], 
+                key=f"checkbox_{i}"
+            )
+            
+            # 完了状態が変更された場合
+            if is_done != item["done"]:
+                st.session_state.todo_list[i]["done"] = is_done
+                st.rerun()
+        
+        with col2:
+            # 削除ボタン
+            if st.button("🗑️ 削除", key=f"delete_{i}"):
+                st.session_state.todo_list.pop(i)
+                st.success("タスクを削除しました")
+                st.rerun()
+
+# 一括操作
+if st.session_state.todo_list:
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("全て完了にする"):
+            for item in st.session_state.todo_list:
+                item["done"] = True
+            st.success("全てのタスクを完了にしました！")
+            st.rerun()
+    
+    with col2:
+        if st.button("完了済みタスクを削除"):
+            st.session_state.todo_list = [item for item in st.session_state.todo_list if not item["done"]]
+            st.success("完了済みタスクを削除しました")
+            st.rerun()
