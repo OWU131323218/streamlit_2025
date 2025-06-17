@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 
 st.title("第8回 演習: ToDoリストアプリ - 解答例")
 st.caption("タスクの追加・完了チェック・削除ができるシンプルなToDoリストを作成しましょう。")
@@ -15,13 +16,30 @@ if "todo_list" not in st.session_state:
 st.subheader("新しいタスクを追加")
 new_task = st.text_input("タスクを入力してください", placeholder="例: レポートを書く")
 
+# 日付と時間の入力欄を追加
+col_date, col_time = st.columns(2)
+with col_date:
+    task_date = st.date_input("日付を選択", value=datetime.now().date())
+with col_time:
+    task_time_str = st.text_input("時間を入力（例: 14:30）", value=datetime.now().strftime("%H:%M"))
+
 if st.button("タスクを追加"):
-    if new_task:
-        st.session_state.todo_list.append({"task": new_task, "done": False})
-        st.success(f"「{new_task}」を追加しました！")
-        st.rerun()
-    else:
+    if not new_task:
         st.error("タスクを入力してください")
+    else:
+        # 時間の形式チェック
+        try:
+            datetime.strptime(task_time_str, "%H:%M")
+            st.session_state.todo_list.append({
+                "task": new_task,
+                "done": False,
+                "date": task_date.strftime("%Y-%m-%d"),
+                "time": task_time_str
+            })
+            st.success(f"「{new_task}」を追加しました！")
+            st.rerun()
+        except ValueError:
+            st.error("時間は「HH:MM」形式で入力してください")
 
 # ToDoリスト表示
 st.subheader("📝 ToDoリスト")
@@ -37,7 +55,7 @@ else:
     
     # 各タスクの表示
     for i, item in enumerate(st.session_state.todo_list):
-        col1, col2 = st.columns([4, 1])
+        col1, col2, col3 = st.columns([4, 2, 1])
         
         with col1:
             # チェックボックスで完了状態を管理
@@ -46,13 +64,16 @@ else:
                 value=item["done"], 
                 key=f"checkbox_{i}"
             )
-            
             # 完了状態が変更された場合
             if is_done != item["done"]:
                 st.session_state.todo_list[i]["done"] = is_done
                 st.rerun()
         
         with col2:
+            # 日付と時間の表示
+            st.write(f"📅 {item.get('date', '')} ⏰ {item.get('time', '')}")
+        
+        with col3:
             # 削除ボタン
             if st.button("🗑️ 削除", key=f"delete_{i}"):
                 st.session_state.todo_list.pop(i)
